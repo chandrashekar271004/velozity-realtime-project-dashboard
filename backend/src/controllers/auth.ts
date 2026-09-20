@@ -1,0 +1,5 @@
+import { Request,Response } from 'express'; import { z } from 'zod'; import { login,refresh,cookieOptions } from '../services/auth.js'; import { fail,ok } from '../utils/http.js';
+export const loginSchema=z.object({email:z.string().email(),password:z.string().min(8)});
+export async function loginCtrl(req:Request,res:Response){try{const x=await login(req.body.email,req.body.password);res.cookie('refreshToken',x.refreshToken,cookieOptions());return ok(res,{user:x.user,accessToken:x.accessToken});}catch(e:any){return fail(res,e.status||500,e.code||'LOGIN_ERROR',e.message||'Login failed');}}
+export async function refreshCtrl(req:Request,res:Response){try{const raw=req.cookies.refreshToken;if(!raw)return fail(res,401,'INVALID_REFRESH_TOKEN','Refresh token missing');const x=await refresh(raw);res.cookie('refreshToken',x.refreshToken,cookieOptions());return ok(res,{accessToken:x.accessToken});}catch(e:any){return fail(res,e.status||401,e.code||'INVALID_REFRESH_TOKEN',e.message||'Invalid refresh token');}}
+export function logoutCtrl(req:Request,res:Response){res.clearCookie('refreshToken',{path:'/api/auth'});return ok(res,{message:'Logged out'});}

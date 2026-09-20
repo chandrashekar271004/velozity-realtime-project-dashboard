@@ -1,0 +1,6 @@
+{
+  "name":"velozity-client-project-dashboard",
+  "private":true,
+  "scripts":{"dev":"concurrently \"npm --prefix backend run dev\" \"npm --prefix frontend run dev\"","build":"npm --prefix backend run build && npm --prefix frontend run build","seed":"npm --prefix backend run prisma:seed"},
+  "devDependencies":{"concurrently":"^9.1.2"}
+}

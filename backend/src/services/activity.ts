@@ -1,0 +1,3 @@
+import { prisma } from '../config/db.js'; import { Role } from '@prisma/client';
+export async function createActivity(data:any){return prisma.activity.create({data});}
+export async function visibleActivities(user:{id:string;role:Role},take=20,since?:Date){const where:any={createdAt:since?{gt:since}:undefined};if(user.role==='PM')where.project={ownerId:user.id};if(user.role==='DEVELOPER')where.task={developerId:user.id};return prisma.activity.findMany({where,take,orderBy:{createdAt:'desc'},include:{actor:{select:{id:true,name:true}},task:{select:{id:true,title:true}},project:{select:{id:true,name:true}}}});}

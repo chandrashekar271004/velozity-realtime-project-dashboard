@@ -1,0 +1,12 @@
+import { Router } from 'express'; import { requireAuth,requireRole } from '../middleware/auth.js'; import { validate,validateQuery } from '../middleware/validate.js'; import { loginCtrl,loginSchema,refreshCtrl,logoutCtrl } from '../controllers/auth.js'; import * as c from '../controllers/core.js'; import { Role } from '@prisma/client'; import { z } from 'zod';
+export const router=Router();
+router.post('/auth/login',validate(loginSchema),loginCtrl);router.post('/auth/refresh',refreshCtrl);router.post('/auth/logout',logoutCtrl);
+router.use(requireAuth);
+router.get('/users',requireRole(Role.ADMIN,Role.PM),c.users);
+router.get('/clients',requireRole(Role.ADMIN,Role.PM),c.clients);router.post('/clients',requireRole(Role.ADMIN),validate(c.clientSchema),c.createClient);
+router.get('/projects',c.projects);router.post('/projects',requireRole(Role.ADMIN,Role.PM),validate(c.projectSchema),c.createProject);
+const taskQuery=z.object({projectId:z.string().optional(),status:z.enum(['TODO','IN_PROGRESS','IN_REVIEW','DONE','OVERDUE']).optional(),priority:z.enum(['LOW','MEDIUM','HIGH','CRITICAL']).optional(),from:z.string().optional(),to:z.string().optional()});
+router.get('/tasks',validateQuery(taskQuery),c.tasks);router.post('/tasks',requireRole(Role.ADMIN,Role.PM),validate(c.taskSchema),c.createTask);router.patch('/tasks/:id/status',validate(c.statusSchema),c.updateTaskStatus);
+router.get('/activity',c.activity);router.get('/activity/missed',c.missed);
+router.get('/notifications',c.notifications);router.get('/notifications/unread',c.unread);router.patch('/notifications/:id/read',c.markRead);router.patch('/notifications/read-all',c.markAllRead);
+router.get('/dashboard',c.dashboard);
